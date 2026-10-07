@@ -1,0 +1,286 @@
+<!DOCTYPE html>  
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard | Charity Blockchain</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+  <style>
+    body {
+      background: linear-gradient(145deg, #0f0f0f, #1a1a40, #000000);
+      background-size: 400% 400%;
+      animation: gradientShift 20s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .block {
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-icon {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .blockchain-btn {
+      font-size: 18px;
+      color: white;
+      background-color: #10b981;
+      padding: 8px 16px;
+      border-radius: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .blockchain-btn:hover {
+      background-color: #059669;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-white px-4 py-8">
+
+  <!-- Header -->
+  <div class="max-w-4xl mx-auto mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-blue-400">Charity Donation</h1>
+    <div class="flex items-center ml-auto gap-4">
+      <button id="blockchainLedgerBtn" class="btn-icon blockchain-btn" onclick="toggleBlockchainLedger()">
+        <i class="fas fa-book-open"></i> Blockchain Ledger
+      </button>
+      <button onclick="logout()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded font-semibold">
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Blockchain Ledger Modal -->
+  <div id="blockchainLedgerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
+    <div class="glass p-6 rounded-lg w-full max-w-2xl relative">
+      <h2 class="text-2xl font-semibold text-blue-300 mb-4">Blockchain Ledger</h2>
+      <button onclick="toggleBlockchainLedger()" class="absolute top-4 right-4 text-white font-bold text-lg">&times;</button>
+      <div id="blockchainList" class="space-y-4 max-h-[400px] overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard Container -->
+  <div class="max-w-4xl mx-auto glass rounded-xl p-6">
+    
+    <!-- Thank You Message -->
+    <div id="thankYouMessage" class="hidden mb-6 p-4 text-center rounded-lg bg-green-600 text-white font-semibold transition-opacity duration-500 ease-in-out"></div>
+
+    <!-- Donation Form -->
+    <form id="donationForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <input type="text" id="donor" placeholder="Donor Name" required class="px-4 py-2 rounded bg-gray-800 border border-blue-500 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition">
+      <input type="number" id="amount" placeholder="Amount" required class="px-4 py-2 rounded bg-gray-800 border border-blue-500 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition">
+      <input type="text" id="cause" placeholder="Cause" required class="px-4 py-2 rounded bg-gray-800 border border-blue-500 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition">
+      <button type="submit" class="col-span-1 md:col-span-3 mt-2 w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded font-semibold hover:scale-105 transition">Donate</button>
+    </form>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="bg-gray-900 p-4 rounded-lg">
+        <h3 class="text-center mb-2 font-semibold text-blue-300">Donations by Cause</h3>
+        <canvas id="causeChart"></canvas>
+      </div>
+      <div class="bg-gray-900 p-4 rounded-lg">
+        <h3 class="text-center mb-2 font-semibold text-blue-300">Donations Over Time</h3>
+        <canvas id="timeChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Export PDF Button -->
+    <div class="flex justify-end gap-4 mb-4">
+      <button onclick="downloadPDF()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded font-semibold">Download PDF</button>
+    </div>
+  </div>
+
+  <script>
+    let blockchainData = [];
+
+    async function fetchBlockchain() {
+      const res = await fetch('/api/chain');
+      const chain = await res.json();
+      blockchainData = chain;
+      renderBlockchain(chain);
+      renderCharts(chain);
+    }
+
+    function renderBlockchain(chain) {
+      const container = document.getElementById('blockchainList');
+      container.innerHTML = '';
+      chain.slice().reverse().forEach(block => {
+        const div = document.createElement('div');
+        div.className = 'p-4 rounded-lg border border-blue-700 bg-gray-900 block';
+        div.innerHTML = `
+          <p><strong>Block ${block.index}</strong></p>
+          <p>Donor: ${block.data.donor}</p>
+          <p>Amount: ₹${block.data.amount}</p>
+          <p>Cause: ${block.data.cause}</p>
+          <p><small class="text-blue-400">Timestamp:</small> ${block.timestamp}</p>
+          <p><small class="text-purple-400">Hash:</small> ${block.hash}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    let causeChartInstance;
+    let timeChartInstance;
+
+    function renderCharts(chain) {
+      const causeTotals = {};
+      const timeMap = {};
+
+      chain.forEach(block => {
+        const { cause, amount } = block.data;
+        const date = new Date(block.timestamp).toLocaleDateString();
+
+        causeTotals[cause] = (causeTotals[cause] || 0) + Number(amount);
+        timeMap[date] = (timeMap[date] || 0) + Number(amount);
+      });
+
+      const causeCtx = document.getElementById('causeChart').getContext('2d');
+      const timeCtx = document.getElementById('timeChart').getContext('2d');
+
+      if (causeChartInstance) causeChartInstance.destroy();
+      if (timeChartInstance) timeChartInstance.destroy();
+
+      causeChartInstance = new Chart(causeCtx, {
+        type: 'pie',
+        data: {
+          labels: Object.keys(causeTotals),
+          datasets: [{
+            data: Object.values(causeTotals),
+            backgroundColor: ['#3b82f6', '#9333ea', '#10b981', '#f59e0b', '#ef4444'],
+          }]
+        }
+      });
+
+      timeChartInstance = new Chart(timeCtx, {
+        type: 'line',
+        data: {
+          labels: Object.keys(timeMap),
+          datasets: [{
+            label: '₹ Donations per Day',
+            data: Object.values(timeMap),
+            fill: false,
+            borderColor: '#60a5fa',
+            tension: 0.2
+          }]
+        }
+      });
+    }
+
+    function toggleBlockchainLedger() {
+      const modal = document.getElementById('blockchainLedgerModal');
+      modal.classList.toggle('hidden');
+    }
+
+    document.getElementById('donationForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const donor = document.getElementById('donor').value;
+      const amount = document.getElementById('amount').value;
+      const cause = document.getElementById('cause').value;
+
+      const res = await fetch('/api/add_donation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donor, amount, cause })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showThankYouMessage(donor, amount);
+        fetchBlockchain();
+        this.reset();
+      } else {
+        alert(data.message || 'Error adding donation');
+      }
+    });
+
+    function showThankYouMessage(donor, amount) {
+      const messageDiv = document.getElementById('thankYouMessage');
+      messageDiv.textContent = `🎉 Thank you, ${donor}! Your donation of ₹${amount} has been successfully recorded on the blockchain.`;
+      messageDiv.classList.remove('hidden');
+      messageDiv.classList.add('opacity-100');
+
+      setTimeout(() => {
+        messageDiv.classList.add('opacity-0');
+        setTimeout(() => {
+          messageDiv.classList.add('hidden');
+          messageDiv.classList.remove('opacity-0');
+        }, 500);
+      }, 5000);
+    }
+
+    function logout() {
+      fetch('/api/logout', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message);
+          if (data.success) window.location.href = '/';
+        })
+        .catch(err => console.error('Logout error:', err));
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text('Charity Blockchain Ledger', 14, 20);
+
+      const causeCanvas = document.getElementById('causeChart');
+      const timeCanvas = document.getElementById('timeChart');
+
+      const causeImg = causeCanvas.toDataURL("image/png", 1.0);
+      const timeImg = timeCanvas.toDataURL("image/png", 1.0);
+
+      doc.addImage(causeImg, 'PNG', 15, 30, 80, 60);
+      doc.addImage(timeImg, 'PNG', 110, 30, 80, 60);
+
+      const tableColumn = ["Block", "Donor", "Amount (₹)", "Cause", "Timestamp", "Hash"];
+      const tableRows = blockchainData.map(block => [
+        block.index,
+        block.data.donor,
+        block.data.amount,
+        block.data.cause,
+        block.timestamp,
+        block.hash.slice(0, 25) + '...'
+      ]);
+
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 100,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [59, 130, 246] }
+      });
+
+      doc.save('charity_blockchain.pdf');
+    }
+
+    fetchBlockchain();
+  </script>
+</body>
+</html>
