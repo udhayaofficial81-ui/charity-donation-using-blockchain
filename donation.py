@@ -4,16 +4,63 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+import json
 import os
 
 donation_api = Blueprint('donation_api', __name__)
+PROFILES_FILE = os.path.join(os.path.dirname(__file__), 'profiles.json')
+
+
+def load_profiles():
+    if not os.path.exists(PROFILES_FILE):
+        return {}
+    with open(PROFILES_FILE, 'r', encoding='utf-8') as profiles_file:
+        return json.load(profiles_file)
 
 # Dashboard UI
 @donation_api.route('/dashboard', methods=['GET'])
 def dashboard():
     if 'email' not in session:
-        return redirect('/login')
-    return render_template('dashboard.html')
+        return redirect('/')
+    return render_template('workspace.html')
+
+
+@donation_api.route('/api/profile', methods=['GET', 'POST'])
+def profile():
+    email = session.get('email')
+    if not email:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+
+    profiles = load_profiles()
+    if request.method == 'GET':
+        details = profiles.get(email, {})
+        return jsonify({
+            'success': True,
+            'profile': {
+                'name': details.get('name', ''),
+                'email': email,
+                'phone': details.get('phone', ''),
+                'organization': details.get('organization', ''),
+                'address': details.get('address', '')
+            }
+        })
+
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'success': False, 'message': 'A valid profile is required'}), 400
+
+    fields = ('name', 'phone', 'organization', 'address')
+    details = {}
+    for field in fields:
+        value = data.get(field, '')
+        if not isinstance(value, str) or len(value) > 200:
+            return jsonify({'success': False, 'message': f'Invalid {field} value'}), 400
+        details[field] = value.strip()
+
+    profiles[email] = details
+    with open(PROFILES_FILE, 'w', encoding='utf-8') as profiles_file:
+        json.dump(profiles, profiles_file, indent=2)
+    return jsonify({'success': True, 'message': 'Personal information saved'})
 
 # JSON API - Get full blockchain
 @donation_api.route('/api/chain', methods=['GET'])

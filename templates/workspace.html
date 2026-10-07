@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f6f7fb">
+  <title>Givingly | Donation workspace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; --ink: #20233b; --muted: #85899d; --line: #ececf3; --paper: #fff; --canvas: #f6f7fb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font-family: "DM Sans", sans-serif; }
+    h1,h2,h3,.brand { font-family: "Manrope", sans-serif; }
+    .sidebar { width: 248px; background: #fff; border-right: 1px solid var(--line); }
+    .nav-link { display:flex; align-items:center; gap:12px; width:100%; padding:12px 14px; border:0; border-radius:12px; color:#777b90; background:transparent; text-align:left; font-weight:600; transition:.2s; }
+    .nav-link:hover { background:#f7f5ff; color:#7356d8; }
+    .nav-link.active { color:#6748d2; background:#f0edff; }
+    .card { background:var(--paper); border:1px solid var(--line); border-radius:18px; box-shadow:0 5px 22px rgba(33,35,65,.035); }
+    .view { display:none; animation: appear .25s ease; }
+    .view.active { display:block; }
+    @keyframes appear { from {opacity:.5;transform:translateY(5px)} to {opacity:1;transform:translateY(0)} }
+    .field { width:100%; border:1px solid #e5e6ee; border-radius:11px; padding:12px 14px; color:var(--ink); background:#fff; outline:none; transition:.2s; }
+    .field:focus { border-color:#9477ef; box-shadow:0 0 0 3px #9477ef24; }
+    .primary { border:0; color:#fff; font-weight:700; border-radius:11px; padding:12px 18px; background:linear-gradient(115deg,#7657dc,#a254d6); box-shadow:0 7px 16px #7657dc2c; transition:transform .2s,box-shadow .2s; }
+    .primary:hover { transform:translateY(-1px); box-shadow:0 10px 20px #7657dc42; }
+    .dark { --ink:#f2f1fb; --muted:#aaa8bc; --line:#353449; --paper:#252438; --canvas:#1b1a2b; color-scheme:dark; }
+    .dark .sidebar,.dark .field { background:#252438; color:var(--ink); }
+    .dark .nav-link { color:#b5b2c7; }
+    .dark .nav-link.active,.dark .nav-link:hover { background:#37304f; color:#c3adff; }
+    .dark .field { border-color:#45435b; }
+    .dark .text-slate-500,.dark .text-slate-600,.dark .text-slate-700,.dark .text-slate-800 { color:#c1bfd0!important; }
+    .dark .bg-slate-50,.dark .bg-violet-50 { background:#302d44!important; }
+    .dark .border-slate-100,.dark .border-slate-200 { border-color:#3c3a50!important; }
+    @media (max-width: 850px) {
+      .sidebar { width:100%; position:static; border-right:0; border-bottom:1px solid var(--line); }
+      .side-inner { padding:14px 18px!important; }
+      .nav-wrap { display:flex; overflow-x:auto; gap:6px; padding:6px 0; }
+      .nav-link { width:auto; white-space:nowrap; }
+      .sidebar-footer { display:none; }
+      .layout { display:block!important; }
+      .main-area { padding:20px!important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout min-h-screen flex">
+    <aside class="sidebar shrink-0 flex flex-col">
+      <div class="side-inner p-6 flex flex-col h-full">
+        <a href="/dashboard" class="brand flex items-center gap-3 text-xl font-extrabold no-underline text-slate-800">
+          <span class="grid place-items-center w-10 h-10 rounded-xl text-white text-xl" style="background:linear-gradient(135deg,#7657dc,#d067bd)">✦</span>
+          Givingly
+        </a>
+        <p class="uppercase tracking-[.16em] text-[10px] font-bold text-slate-400 mt-10 mb-3 px-3">Workspace</p>
+        <nav class="nav-wrap space-y-1">
+          <button class="nav-link active" data-view="overview"><span>▦</span> Overview</button>
+          <button class="nav-link" data-view="donors"><span>♧</span> Donors <span id="donorNavCount" class="ml-auto text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">0</span></button>
+          <button class="nav-link" data-view="profile"><span>◎</span> Personal information</button>
+          <button class="nav-link" data-view="settings"><span>⚙</span> Settings</button>
+          <button class="nav-link" id="ledgerNav"><span>◇</span> Blockchain ledger</button>
+        </nav>
+        <div class="sidebar-footer mt-auto rounded-2xl p-4 text-white overflow-hidden relative" style="background:linear-gradient(145deg,#6550c7,#a354bb)">
+          <div class="text-xs uppercase tracking-wider opacity-75">Giving with trust</div>
+          <p class="font-bold mt-2 mb-1">Every gift matters.</p>
+          <p class="text-xs leading-relaxed opacity-80">Transparent donations. Meaningful impact.</p>
+          <div class="absolute -right-5 -bottom-8 w-24 h-24 rounded-full border-[14px] border-white/10"></div>
+        </div>
+        <button id="logoutBtn" class="nav-link mt-5"><span>↪</span> Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main-area flex-1 min-w-0 p-8 lg:p-10">
+      <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <p class="text-sm text-slate-500 mb-1">Charity workspace</p>
+          <h1 id="pageTitle" class="text-2xl sm:text-3xl font-extrabold">Overview</h1>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="themeToggle" class="card px-3 py-2 text-slate-600 hover:text-violet-700" aria-label="Toggle dark mode">☼ <span class="hidden sm:inline text-sm font-semibold">Appearance</span></button>
+          <div class="card flex items-center gap-3 px-3 py-2">
+            <div id="avatar" class="grid place-items-center w-9 h-9 rounded-full bg-violet-100 text-violet-700 font-bold">G</div>
+            <div class="hidden sm:block"><p id="headerName" class="text-sm font-bold leading-tight">Your account</p><p id="headerEmail" class="text-xs text-slate-500 max-w-48 truncate"></p></div>
+          </div>
+        </div>
+      </header>
+
+      <section id="view-overview" class="view active">
+        <div class="rounded-3xl p-7 sm:p-9 text-white relative overflow-hidden mb-6" style="background:linear-gradient(115deg,#6750cd,#8a51d0 56%,#d265b5)">
+          <div class="relative z-10 max-w-xl">
+            <p class="text-sm font-semibold text-white/75 mb-2">MAKE EVERY CONTRIBUTION COUNT</p>
+            <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">Good things grow when we give.</h2>
+            <p class="text-sm sm:text-base text-white/80 mb-5">Record a donation and keep every contribution transparent on the blockchain.</p>
+            <button class="bg-white text-violet-700 font-bold rounded-xl px-5 py-3 hover:bg-violet-50 transition" data-go="donateForm">＋ Record a donation</button>
+          </div>
+          <div class="absolute -right-10 -top-16 w-64 h-64 rounded-full border-[30px] border-white/10"></div>
+          <div class="absolute right-24 -bottom-36 w-72 h-72 rounded-full border-[38px] border-white/10"></div>
+          <div class="absolute right-16 top-9 text-6xl opacity-20">✦</div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+          <div class="card p-5"><div class="flex justify-between items-start"><span class="text-sm text-slate-500">Total contributions</span><span class="w-9 h-9 grid place-items-center rounded-xl bg-violet-50 text-violet-600">₹</span></div><p id="totalAmount" class="text-2xl font-extrabold mt-4">₹0</p><p class="text-xs text-slate-400 mt-1">Across recorded donations</p></div>
+          <div class="card p-5"><div class="flex justify-between items-start"><span class="text-sm text-slate-500">Donations recorded</span><span class="w-9 h-9 grid place-items-center rounded-xl bg-pink-50 text-pink-600">↗</span></div><p id="donationCount" class="text-2xl font-extrabold mt-4">0</p><p class="text-xs text-slate-400 mt-1">Verified ledger entries</p></div>
+          <div class="card p-5"><div class="flex justify-between items-start"><span class="text-sm text-slate-500">Unique donors</span><span class="w-9 h-9 grid place-items-center rounded-xl bg-amber-50 text-amber-600">♧</span></div><p id="uniqueDonors" class="text-2xl font-extrabold mt-4">0</p><p class="text-xs text-slate-400 mt-1">People making a difference</p></div>
+          <div class="card p-5"><div class="flex justify-between items-start"><span class="text-sm text-slate-500">Causes supported</span><span class="w-9 h-9 grid place-items-center rounded-xl bg-emerald-50 text-emerald-600">♡</span></div><p id="causeCount" class="text-2xl font-extrabold mt-4">0</p><p class="text-xs text-slate-400 mt-1">Different causes reached</p></div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-5 gap-5 mb-6">
+          <div class="card p-5 xl:col-span-3">
+            <div class="flex items-center justify-between mb-4"><div><h3 class="font-bold">Giving activity</h3><p class="text-sm text-slate-500 mt-1">Donation totals by day</p></div><span class="text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-full px-3 py-1">Live ledger</span></div>
+            <div class="h-64"><canvas id="activityChart"></canvas></div>
+          </div>
+          <div class="card p-5 xl:col-span-2">
+            <div class="mb-4"><h3 class="font-bold">Giving by cause</h3><p class="text-sm text-slate-500 mt-1">Where support is going</p></div>
+            <div class="h-64"><canvas id="causeChart"></canvas></div>
+          </div>
+        </div>
+        <div class="card p-5">
+          <div class="flex justify-between items-center gap-3 mb-4"><div><h3 class="font-bold">Recent donations</h3><p class="text-sm text-slate-500 mt-1">Latest blockchain entries</p></div><button class="text-sm font-bold text-violet-700 hover:text-violet-900" data-view="donors">View all →</button></div>
+          <div id="recentDonations" class="space-y-3"></div>
+        </div>
+
+        <div id="donateForm" class="card p-5 sm:p-6 mt-6">
+          <div class="mb-5"><h3 class="font-bold text-lg">Record a donation</h3><p class="text-sm text-slate-500 mt-1">Add a contribution to the shared charity ledger.</p></div>
+          <form id="donationForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label class="text-sm font-semibold text-slate-600">Donor name<input class="field mt-2" type="text" id="donor" placeholder="e.g. Alex Morgan" maxlength="100" required></label>
+            <label class="text-sm font-semibold text-slate-600">Amount (₹)<input class="field mt-2" type="number" id="amount" placeholder="500" min="1" step="0.01" required></label>
+            <label class="text-sm font-semibold text-slate-600">Cause<input class="field mt-2" type="text" id="cause" placeholder="e.g. Education" maxlength="100" required></label>
+            <div class="md:col-span-3 flex flex-wrap items-center gap-4"><button id="donateSubmit" class="primary" type="submit">Add donation</button><p id="donationMessage" class="text-sm" role="status"></p></div>
+          </form>
+        </div>
+      </section>
+
+      <section id="view-donors" class="view">
+        <div class="card p-5 sm:p-6">
+          <div class="flex flex-wrap justify-between items-end gap-4 mb-6"><div><h2 class="text-xl font-extrabold">Donor directory</h2><p class="text-sm text-slate-500 mt-1">A separate, searchable list of every recorded contribution.</p></div><input id="donorSearch" class="field max-w-sm" type="search" placeholder="Search donor or cause…"></div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left min-w-[650px]"><thead><tr class="text-xs uppercase tracking-wider text-slate-400 border-b border-slate-100"><th class="py-3 px-3">Donor</th><th class="py-3 px-3">Cause</th><th class="py-3 px-3">Date</th><th class="py-3 px-3">Ledger block</th><th class="py-3 px-3 text-right">Amount</th></tr></thead><tbody id="donorRows"></tbody></table>
+          </div>
+          <p id="emptyDonors" class="hidden text-center py-12 text-slate-500">No donations match your search.</p>
+        </div>
+      </section>
+
+      <section id="view-profile" class="view">
+        <div class="max-w-3xl card p-5 sm:p-8">
+          <div class="mb-7"><h2 class="text-xl font-extrabold">Personal information</h2><p class="text-sm text-slate-500 mt-1">Manage the details associated with your charity account.</p></div>
+          <form id="profileForm" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <label class="text-sm font-semibold text-slate-600">Full name<input class="field mt-2" name="name" maxlength="200" placeholder="Your name"></label>
+            <label class="text-sm font-semibold text-slate-600">Account email<input class="field mt-2 bg-slate-50" name="email" type="email" readonly></label>
+            <label class="text-sm font-semibold text-slate-600">Phone number<input class="field mt-2" name="phone" type="tel" maxlength="200" placeholder="+91 98765 43210"></label>
+            <label class="text-sm font-semibold text-slate-600">Organization<input class="field mt-2" name="organization" maxlength="200" placeholder="Organization name"></label>
+            <label class="text-sm font-semibold text-slate-600 sm:col-span-2">Address<input class="field mt-2" name="address" maxlength="200" placeholder="City, state or mailing address"></label>
+            <div class="sm:col-span-2 flex flex-wrap items-center gap-4"><button class="primary" type="submit">Save information</button><p id="profileMessage" role="status" class="text-sm"></p></div>
+          </form>
+        </div>
+      </section>
+
+      <section id="view-settings" class="view">
+        <div class="max-w-3xl card p-5 sm:p-8">
+          <div class="mb-7"><h2 class="text-xl font-extrabold">Settings</h2><p class="text-sm text-slate-500 mt-1">Personalize your Givingly workspace.</p></div>
+          <div class="flex items-center justify-between gap-5 py-5 border-b border-slate-100"><div><p class="font-bold">Dark appearance</p><p class="text-sm text-slate-500 mt-1">Use a darker color palette across the workspace.</p></div><label class="relative inline-flex items-center cursor-pointer"><input id="darkSetting" type="checkbox" class="sr-only peer"><span class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-violet-600 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></span></label></div>
+          <div class="flex items-center justify-between gap-5 py-5"><div><p class="font-bold">Donation confirmations</p><p class="text-sm text-slate-500 mt-1">Show a confirmation when an entry is recorded.</p></div><label class="relative inline-flex items-center cursor-pointer"><input id="confirmSetting" type="checkbox" checked class="sr-only peer"><span class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-violet-600 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></span></label></div>
+          <div class="mt-3 rounded-xl bg-violet-50 p-4"><p class="text-sm font-bold text-violet-800">Blockchain transparency</p><p class="text-sm text-violet-700 mt-1">Donation records are visible in the shared ledger and cannot be removed from this workspace.</p></div>
+          <p id="settingsMessage" class="text-sm text-slate-500 mt-4" role="status"></p>
+        </div>
+      </section>
+
+      <section id="view-ledger" class="view">
+        <div class="card p-5 sm:p-6">
+          <div class="flex flex-wrap justify-between items-end gap-4 mb-6"><div><h2 class="text-xl font-extrabold">Blockchain ledger</h2><p class="text-sm text-slate-500 mt-1">Verified donation records, ordered newest first.</p></div><a href="/export_pdf" class="primary no-underline inline-block">Download report</a></div>
+          <div id="ledgerList" class="space-y-3"></div>
+        </div>
+      </section>
+      <footer class="text-center text-xs text-slate-400 py-8">Givingly · Transparent giving, meaningful impact</footer>
+    </main>
+  </div>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    let donations = [];
+    let activityChart;
+    let causeChart;
+    const titles = { overview: 'Overview', donors: 'Donor directory', profile: 'Personal information', settings: 'Settings', ledger: 'Blockchain ledger' };
+    const money = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(Number(amount) || 0);
+
+    function switchView(name) {
+      document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.id === `view-${name}`));
+      document.querySelectorAll('.nav-link[data-view]').forEach((button) => button.classList.toggle('active', button.dataset.view === name));
+      $('#pageTitle').textContent = titles[name];
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('.nav-link[data-view], [data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
+    $('#ledgerNav').addEventListener('click', () => switchView('ledger'));
+    document.querySelector('[data-go="donateForm"]').addEventListener('click', () => $('#donateForm').scrollIntoView({ behavior: 'smooth', block: 'center' }));
+
+    function appendText(parent, tag, text, className) {
+      const element = document.createElement(tag);
+      element.textContent = text;
+      if (className) element.className = className;
+      parent.appendChild(element);
+      return element;
+    }
+    function donorName(block) {
+      return block.data && typeof block.data === 'object' ? (block.data.donor || 'Anonymous donor') : '';
+    }
+    function validDonation(block) {
+      return block.data && typeof block.data === 'object' && block.data.donor !== undefined;
+    }
+    function formatDate(value) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? String(value || '—') : date.toLocaleString();
+    }
+    function renderDonorRows() {
+      const term = $('#donorSearch').value.trim().toLowerCase();
+      const rows = $('#donorRows');
+      rows.replaceChildren();
+      const filtered = donations.filter((block) => {
+        const data = block.data || {};
+        return `${data.donor || ''} ${data.cause || ''}`.toLowerCase().includes(term);
+      });
+      $('#emptyDonors').classList.toggle('hidden', filtered.length > 0);
+      filtered.forEach((block) => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-slate-100 last:border-0';
+        const personCell = document.createElement('td');
+        personCell.className = 'py-4 px-3';
+        const personWrap = document.createElement('div');
+        personWrap.className = 'flex items-center gap-3';
+        const badge = appendText(personWrap, 'span', donorName(block).slice(0, 1).toUpperCase(), 'grid place-items-center w-9 h-9 rounded-full bg-violet-100 text-violet-700 font-bold');
+        badge.setAttribute('aria-hidden', 'true');
+        const personInfo = document.createElement('div');
+        appendText(personInfo, 'p', donorName(block), 'font-bold text-sm');
+        appendText(personInfo, 'p', `Block #${block.index}`, 'text-xs text-slate-400 mt-0.5');
+        personWrap.appendChild(personInfo);
+        personCell.appendChild(personWrap);
+        row.appendChild(personCell);
+        appendText(row, 'td', block.data.cause || '—', 'py-4 px-3 text-sm text-slate-600');
+        appendText(row, 'td', formatDate(block.timestamp), 'py-4 px-3 text-sm text-slate-500');
+        appendText(row, 'td', `#${block.index}`, 'py-4 px-3 text-sm text-slate-500 font-mono');
+        appendText(row, 'td', money(block.data.amount), 'py-4 px-3 text-sm font-bold text-right text-violet-700');
+        rows.appendChild(row);
+      });
+    }
+    function renderLedger() {
+      const list = $('#ledgerList');
+      list.replaceChildren();
+      donations.slice().reverse().forEach((block) => {
+        const card = document.createElement('article');
+        card.className = 'rounded-xl border border-slate-100 bg-slate-50 p-4';
+        const top = document.createElement('div');
+        top.className = 'flex flex-wrap justify-between gap-2';
+        appendText(top, 'p', `Block #${block.index} · ${donorName(block)}`, 'font-bold');
+        appendText(top, 'p', money(block.data.amount), 'font-bold text-violet-700');
+        card.appendChild(top);
+        appendText(card, 'p', `Cause: ${block.data.cause || '—'} · ${formatDate(block.timestamp)}`, 'text-sm text-slate-500 mt-2');
+        appendText(card, 'p', `Hash: ${block.hash || '—'}`, 'text-xs text-slate-400 font-mono break-all mt-2');
+        list.appendChild(card);
+      });
+      if (!donations.length) appendText(list, 'p', 'No donation records yet.', 'text-center py-10 text-slate-500');
+    }
+    function renderRecent() {
+      const list = $('#recentDonations');
+      list.replaceChildren();
+      donations.slice().reverse().slice(0, 5).forEach((block) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between gap-4 py-2';
+        const details = document.createElement('div');
+        details.className = 'flex items-center gap-3 min-w-0';
+        appendText(details, 'span', donorName(block).slice(0, 1).toUpperCase(), 'grid place-items-center w-10 h-10 shrink-0 rounded-full bg-pink-50 text-pink-600 font-bold');
+        const labels = document.createElement('div');
+        labels.className = 'min-w-0';
+        appendText(labels, 'p', donorName(block), 'font-bold text-sm truncate');
+        appendText(labels, 'p', `${block.data.cause || 'General'} · ${formatDate(block.timestamp)}`, 'text-xs text-slate-500 truncate mt-1');
+        details.appendChild(labels);
+        row.appendChild(details);
+        appendText(row, 'p', money(block.data.amount), 'font-bold text-sm whitespace-nowrap');
+        list.appendChild(row);
+      });
+      if (!donations.length) appendText(list, 'p', 'Your latest donations will show up here.', 'text-sm text-slate-500 py-5');
+    }
+    function renderCharts() {
+      const causes = {};
+      const days = {};
+      donations.forEach((block) => {
+        const day = new Date(block.timestamp).toLocaleDateString();
+        const cause = block.data.cause || 'Other';
+        causes[cause] = (causes[cause] || 0) + Number(block.data.amount || 0);
+        days[day] = (days[day] || 0) + Number(block.data.amount || 0);
+      });
+      if (activityChart) activityChart.destroy();
+      if (causeChart) causeChart.destroy();
+      activityChart = new Chart($('#activityChart'), {
+        type: 'line',
+        data: { labels: Object.keys(days), datasets: [{ data: Object.values(days), label: 'Donations (₹)', borderColor: '#7959dc', backgroundColor: '#7959dc1c', fill: true, tension: .38, pointBackgroundColor: '#d164bb' }] },
+        options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#eeeeF5' } }, x: { grid: { display: false } } } }
+      });
+      causeChart = new Chart($('#causeChart'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(causes), datasets: [{ data: Object.values(causes), backgroundColor: ['#7959dc','#d164bb','#f5b84b','#4caf9b','#6e9deb','#f27e72'], borderWidth: 0 }] },
+        options: { maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15 } } } }
+      });
+    }
+    function renderAll() {
+      const realDonations = donations.filter(validDonation);
+      const total = realDonations.reduce((sum, block) => sum + Number(block.data.amount || 0), 0);
+      $('#totalAmount').textContent = money(total);
+      $('#donationCount').textContent = String(realDonations.length);
+      $('#uniqueDonors').textContent = String(new Set(realDonations.map((block) => String(block.data.donor || '').trim().toLowerCase())).size);
+      $('#causeCount').textContent = String(new Set(realDonations.map((block) => block.data.cause).filter(Boolean)).size);
+      $('#donorNavCount').textContent = String(realDonations.length);
+      renderDonorRows();
+      renderLedger();
+      renderRecent();
+      renderCharts();
+    }
+    async function fetchDonations() {
+      const response = await fetch('/api/chain');
+      if (!response.ok) throw new Error('Could not load donation records.');
+      const chain = await response.json();
+      donations = Array.isArray(chain) ? chain.filter(validDonation) : [];
+      renderAll();
+    }
+    async function loadProfile() {
+      const response = await fetch('/api/profile');
+      if (!response.ok) throw new Error('Could not load personal information.');
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || 'Could not load personal information.');
+      const profile = result.profile;
+      Object.entries(profile).forEach(([key, value]) => {
+        const input = $(`#profileForm [name="${key}"]`);
+        if (input) input.value = value || '';
+      });
+      $('#headerEmail').textContent = profile.email;
+      const displayName = profile.name || profile.email;
+      $('#headerName').textContent = displayName;
+      $('#avatar').textContent = displayName.slice(0, 1).toUpperCase();
+    }
+    $('#donorSearch').addEventListener('input', renderDonorRows);
+    $('#donationForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const message = $('#donationMessage');
+      const button = $('#donateSubmit');
+      message.textContent = '';
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/add_donation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ donor: $('#donor').value.trim(), amount: $('#amount').value, cause: $('#cause').value.trim() })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Could not record the donation.');
+        event.target.reset();
+        await fetchDonations();
+        message.className = 'text-sm text-emerald-600';
+        message.textContent = $('#confirmSetting').checked ? 'Donation recorded successfully on the blockchain.' : 'Donation recorded.';
+      } catch (error) {
+        message.className = 'text-sm text-rose-600';
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+    $('#profileForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      const profile = Object.fromEntries(['name', 'phone', 'organization', 'address'].map((key) => [key, form.get(key)]));
+      const message = $('#profileMessage');
+      try {
+        const response = await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(profile) });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Could not save your information.');
+        message.className = 'text-sm text-emerald-600';
+        message.textContent = result.message;
+        await loadProfile();
+      } catch (error) {
+        message.className = 'text-sm text-rose-600';
+        message.textContent = error.message;
+      }
+    });
+    function updateTheme(enabled) {
+      document.body.classList.toggle('dark', enabled);
+      localStorage.setItem('givingly-dark-mode', enabled ? 'on' : 'off');
+      $('#darkSetting').checked = enabled;
+    }
+    const storedTheme = localStorage.getItem('givingly-dark-mode') === 'on';
+    updateTheme(storedTheme);
+    $('#themeToggle').addEventListener('click', () => updateTheme(!document.body.classList.contains('dark')));
+    $('#darkSetting').addEventListener('change', (event) => updateTheme(event.target.checked));
+    const savedConfirmation = localStorage.getItem('givingly-confirmations');
+    if (savedConfirmation !== null) $('#confirmSetting').checked = savedConfirmation === 'on';
+    $('#confirmSetting').addEventListener('change', (event) => {
+      localStorage.setItem('givingly-confirmations', event.target.checked ? 'on' : 'off');
+      $('#settingsMessage').textContent = 'Your preference has been saved on this device.';
+      setTimeout(() => { $('#settingsMessage').textContent = ''; }, 2500);
+    });
+    $('#logoutBtn').addEventListener('click', async () => {
+      const response = await fetch('/api/logout', { method: 'POST' });
+      if (!response.ok) throw new Error('Could not sign out.');
+      window.location.href = '/';
+    });
+    Promise.all([fetchDonations(), loadProfile()]).catch((error) => {
+      const target = $('#donationMessage');
+      target.className = 'text-sm text-rose-600';
+      target.textContent = error.message;
+    });
+  </script>
+</body>
+</html>

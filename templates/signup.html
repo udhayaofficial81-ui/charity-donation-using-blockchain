@@ -2,49 +2,115 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Signup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f6fc">
+  <title>Create account | Givingly</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; background:#f7f6fc; color:#24233b; font-family:"DM Sans",sans-serif; }
+    h1,h2,.brand { font-family:"Manrope",sans-serif; }
+    .signup-shell { min-height:100vh; display:grid; grid-template-columns:minmax(0,1fr) minmax(440px,.88fr); }
+    .story { position:relative; overflow:hidden; background:linear-gradient(145deg,#5b48bd 0%,#8250c7 52%,#d265b5 100%); }
+    .story::before { content:""; position:absolute; width:560px;height:560px;right:-190px;top:-180px;border:1px solid rgba(255,255,255,.17);border-radius:50%;box-shadow:0 0 0 45px rgba(255,255,255,.035),0 0 0 95px rgba(255,255,255,.025); }
+    .form-input { width:100%;border:1px solid #e5e4ed;border-radius:12px;padding:13px 15px;outline:none;color:#24233b;background:#fff;transition:.2s; }
+    .form-input:focus { border-color:#8c70e1;box-shadow:0 0 0 4px rgba(140,112,225,.12); }
+    .submit-btn { width:100%;border:0;border-radius:12px;padding:14px 18px;color:#fff;font-weight:700;background:linear-gradient(110deg,#7055d4,#a553c5);box-shadow:0 9px 18px rgba(112,85,212,.22);transition:transform .2s,box-shadow .2s; }
+    .submit-btn:hover { transform:translateY(-1px);box-shadow:0 12px 22px rgba(112,85,212,.3); }
+    .submit-btn:disabled { opacity:.7;cursor:wait;transform:none; }
+    @media(max-width:800px) { .signup-shell { grid-template-columns:1fr; }.story { min-height:260px; }.signup-panel { padding:34px 22px 46px!important; } }
+  </style>
 </head>
-<body class="flex items-center justify-center h-screen bg-gray-100">
-  <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-6 text-center">Sign Up</h2>
-    <form id="signupForm" class="space-y-4">
-      <div>
-        <label for="email" class="block mb-1 font-medium">Email</label>
-        <input type="email" id="email" name="email" class="w-full border px-3 py-2 rounded" required>
+<body>
+  <main class="signup-shell">
+    <section class="story text-white flex flex-col justify-between p-8 sm:p-12 lg:p-16">
+      <a href="/" class="brand relative z-10 inline-flex items-center gap-3 w-fit text-white no-underline">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-white/15 border border-white/20">
+          <svg viewBox="0 0 32 32" width="27" height="27" fill="none" aria-hidden="true"><path d="M16 26s-10-6.2-10-13.1A5.7 5.7 0 0 1 16 9.2a5.7 5.7 0 0 1 10 3.7C26 19.8 16 26 16 26Z" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"/><path d="m12.2 16.2 2.5 2.5 5.2-5.4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span><span class="text-2xl font-extrabold tracking-tight">Givingly</span>
+      </a>
+      <div class="relative z-10 max-w-xl py-12">
+        <p class="text-xs font-bold tracking-[.18em] text-white/75 mb-5">A LITTLE GOOD GOES A LONG WAY</p>
+        <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">Start making<br>an impact today.</h1>
+        <p class="mt-5 max-w-md text-base leading-relaxed text-white/80">Create your account to record contributions, keep donor details organized, and make every gift more transparent.</p>
+        <div class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white/10 border border-white/15 px-4 py-3 text-sm text-white/90">
+          <span class="text-emerald-200">✓</span> One workspace for your giving activity
+        </div>
       </div>
-      <div>
-        <label for="password" class="block mb-1 font-medium">Password</label>
-        <input type="password" id="password" name="password" class="w-full border px-3 py-2 rounded" required>
-      </div>
-      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Sign Up</button>
-      <p id="message" class="text-center text-red-500 mt-2"></p>
-    </form>
-  </div>
+      <p class="relative z-10 text-xs text-white/60">Givingly · Transparent giving, meaningful impact.</p>
+    </section>
 
+    <section class="signup-panel flex items-center justify-center p-12">
+      <div class="w-full max-w-md">
+        <a href="/" class="brand inline-flex items-center gap-2 text-violet-700 no-underline mb-9 lg:hidden">
+          <span class="grid place-items-center w-9 h-9 rounded-xl text-white" style="background:linear-gradient(135deg,#7055d4,#d265b5)">
+            <svg viewBox="0 0 32 32" width="23" height="23" fill="none" aria-hidden="true"><path d="M16 26s-10-6.2-10-13.1A5.7 5.7 0 0 1 16 9.2a5.7 5.7 0 0 1 10 3.7C26 19.8 16 26 16 26Z" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"/><path d="m12.2 16.2 2.5 2.5 5.2-5.4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span><span class="text-xl font-extrabold">Givingly</span>
+        </a>
+        <div class="mb-7">
+          <p class="text-sm font-bold uppercase tracking-[.16em] text-violet-600 mb-3">Join Givingly</p>
+          <h2 class="text-3xl font-extrabold tracking-tight">Create your account</h2>
+          <p class="mt-2 text-sm text-slate-500">It only takes a moment to get started.</p>
+        </div>
+        <form id="signupForm" class="space-y-5">
+          <label for="email" class="block text-sm font-semibold text-slate-700">Email address
+            <input class="form-input mt-2" type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+          </label>
+          <label for="password" class="block text-sm font-semibold text-slate-700">Password
+            <span class="relative block mt-2">
+              <input class="form-input pr-12" type="password" id="password" name="password" placeholder="Create a password" autocomplete="new-password" minlength="8" required>
+              <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 px-4 text-slate-400 hover:text-violet-700" aria-label="Show password" aria-pressed="false">
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+              </button>
+            </span>
+            <span class="block mt-2 text-xs text-slate-400">Use at least 8 characters.</span>
+          </label>
+          <p id="message" class="hidden text-sm rounded-lg px-3 py-2" role="status" aria-live="polite"></p>
+          <button id="signupSubmit" type="submit" class="submit-btn">Create account <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="mt-7 text-center text-sm text-slate-500">Already have an account? <a href="/" class="font-bold text-violet-700 hover:text-violet-900">Sign in</a></p>
+      </div>
+    </section>
+  </main>
   <script>
-    document.getElementById('signupForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.getElementById('togglePassword');
+    const message = document.getElementById('message');
+    const submitButton = document.getElementById('signupSubmit');
 
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+    toggleButton.addEventListener('click', () => {
+      const showPassword = passwordInput.type === 'password';
+      passwordInput.type = showPassword ? 'text' : 'password';
+      toggleButton.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+      toggleButton.setAttribute('aria-pressed', String(showPassword));
+    });
 
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      const result = await response.json();
-      const msg = document.getElementById('message');
-      msg.textContent = result.message;
-
-      if (result.success) {
-        msg.classList.remove('text-red-500');
-        msg.classList.add('text-green-500');
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1500);
+    document.getElementById('signupForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.className = 'hidden';
+      submitButton.disabled = true;
+      try {
+        const response = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value.trim(),
+            password: passwordInput.value
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Unable to create your account.');
+        message.textContent = 'Account created. Taking you to sign in…';
+        message.className = 'text-sm rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700';
+        setTimeout(() => { window.location.href = '/'; }, 900);
+      } catch (error) {
+        message.textContent = error.message;
+        message.className = 'text-sm rounded-lg px-3 py-2 bg-rose-50 text-rose-700';
+      } finally {
+        submitButton.disabled = false;
       }
     });
   </script>

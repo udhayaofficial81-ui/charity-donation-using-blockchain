@@ -1,106 +1,55 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Homepage</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f6fc">
+  <title>Welcome | Givingly</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class'
-    }
-  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: linear-gradient(-45deg, #0f0f0f, #000428, #004e92, #000000);
-      background-size: 400% 400%;
-      animation: gradientShift 20s ease infinite;
-      min-height: 100vh;
-    }
-
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    .fade-in-up {
-      animation: fadeInUp 1.2s ease-out forwards;
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .blob-animated {
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      z-index: 0;
-      opacity: 0.1;
-    }
-
-    .pulse-button {
-      background: linear-gradient(to right, #00c6ff, #0072ff);
-      color: white;
-      padding: 0.75rem 2rem;
-      border-radius: 9999px;
-      font-weight: 600;
-      box-shadow: 0 0 15px rgba(0, 183, 255, 0.4);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      animation: pulseGlow 2s infinite ease-in-out;
-    }
-
-    .pulse-button:hover {
-      transform: scale(1.08);
-      box-shadow: 0 0 25px rgba(0, 183, 255, 0.8);
-    }
-
-    @keyframes pulseGlow {
-      0% { box-shadow: 0 0 15px rgba(0, 183, 255, 0.4); }
-      50% { box-shadow: 0 0 25px rgba(0, 183, 255, 0.8); transform: scale(1.05); }
-      100% { box-shadow: 0 0 15px rgba(0, 183, 255, 0.4); }
-    }
+    body { margin:0; min-height:100vh; color:#24233b; background:#f7f6fc; font-family:"DM Sans",sans-serif; }
+    h1,h2,.brand { font-family:"Manrope",sans-serif; }
+    .hero-bg { background:radial-gradient(ellipse at 85% 8%,rgba(218,114,190,.28),transparent 31%),radial-gradient(ellipse at 6% 85%,rgba(115,92,218,.22),transparent 35%),#f7f6fc; }
+    .hero-card { background:linear-gradient(120deg,#614cc2,#8651ca 58%,#d265b5); }
+    @media(prefers-reduced-motion:no-preference) { .float { animation:float 5s ease-in-out infinite; } @keyframes float { 50% { transform:translateY(-8px); } } }
   </style>
 </head>
-<body class="relative text-white overflow-x-hidden transition-colors duration-300 dark:bg-black">
-
-  <!-- Navbar -->
-  <header class="fixed top-0 w-full z-50 bg-black/30 backdrop-blur-md border-b border-white/10 text-white px-6 py-4 flex items-center justify-between">
-    <h1 class="text-xl font-bold text-blue-300">Welcome</h1>
-    <button id="modeToggle" class="hover:text-yellow-400 transition text-lg">🌓</button>
+<body class="hero-bg">
+  <header class="max-w-7xl mx-auto px-5 sm:px-8 py-5 flex items-center justify-between">
+    <a href="/home" class="brand inline-flex items-center gap-3 text-slate-800 no-underline">
+      <span class="grid place-items-center w-11 h-11 rounded-2xl text-white shadow-lg" style="background:linear-gradient(135deg,#7055d4,#d265b5)">
+        <svg viewBox="0 0 32 32" width="27" height="27" fill="none" aria-hidden="true"><path d="M16 26s-10-6.2-10-13.1A5.7 5.7 0 0 1 16 9.2a5.7 5.7 0 0 1 10 3.7C26 19.8 16 26 16 26Z" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"/><path d="m12.2 16.2 2.5 2.5 5.2-5.4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="text-2xl font-extrabold tracking-tight">Givingly</span>
+    </a>
+    <a href="/logout" class="rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-violet-700 no-underline transition">Sign out</a>
   </header>
-
-  <!-- Animated SVGs -->
-  <svg class="blob-animated top-[-100px] left-[-100px]" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-    <path fill="#3B82F6" d="M48.8,-58.1C60.4,-45.7,65.6,-28.5,66.5,-12.6C67.3,3.3,63.8,18,56.7,31.1C49.7,44.2,39.1,55.7,26.2,61.3C13.3,66.9,-2,66.5,-17.6,61.2C-33.2,55.9,-49,45.7,-59.2,31.5C-69.3,17.2,-73.9,-1.1,-67.6,-16.3C-61.4,-31.4,-44.3,-43.3,-28.2,-54.2C-12.2,-65,-6.1,-74.9,6.3,-81.5C18.7,-88.1,37.4,-91.4,48.8,-58.1Z" transform="translate(100 100)" />
-  </svg>
-
-  <svg class="blob-animated bottom-[-100px] right-[-100px]" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-    <path fill="#EC4899" d="M51.1,-63.6C65.6,-55.3,76.5,-37.4,74.6,-21.3C72.8,-5.2,58.2,9.1,48.5,24.2C38.8,39.3,34.1,55.2,23.4,64.5C12.7,73.8,-4,76.6,-17.3,70.3C-30.6,64.1,-40.6,48.9,-52.7,35.6C-64.9,22.4,-79.2,11.2,-80.6,-1.1C-81.9,-13.4,-70.3,-26.7,-59.7,-37.2C-49.1,-47.6,-39.5,-55.2,-27.8,-63.5C-16.2,-71.8,-8.1,-80.8,5.3,-89C18.8,-97.1,37.6,-104.5,51.1,-63.6Z" transform="translate(100 100)" />
-  </svg>
-
-  <!-- Hero Section -->
-  <main class="pt-32 px-6 fade-in-up">
-    <div class="max-w-4xl mx-auto bg-white/5 backdrop-blur-md rounded-2xl p-10 shadow-xl border border-white/10 text-center">
-      <h2 class="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text mb-6">
-     Charity Donation powered by Blockchain
-      </h2>
-      <p class="text-lg text-gray-200 mb-4">Revolutionizing how we track donations using blockchain technology.</p>
-      <p class="text-lg text-gray-300 mb-4">Every contribution is transparent and traceable on a decentralized ledger.</p>
-      <p class="text-lg text-gray-300 mb-6">Build trust and amplify your impact with verifiable giving.</p>
-
-      <a href="/dashboard" class="pulse-button inline-block mt-6">🚀 Get Started</a>
-    </div>
+  <main class="max-w-7xl mx-auto px-5 sm:px-8 pt-10 sm:pt-16 pb-16">
+    <section class="hero-card relative overflow-hidden rounded-[28px] p-8 sm:p-12 lg:p-16 text-white shadow-xl shadow-violet-900/10">
+      <div class="relative z-10 max-w-2xl">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-bold tracking-wide mb-6"><span class="w-2 h-2 rounded-full bg-emerald-300"></span> YOUR GIVING WORKSPACE</div>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight">Good things grow<br>when we give.</h1>
+        <p class="mt-6 max-w-xl text-base sm:text-lg text-white/80 leading-relaxed">Keep your charitable contributions organized, recognize your donors, and follow every record through a transparent blockchain ledger.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="/dashboard#donateForm" class="inline-flex items-center gap-3 rounded-xl bg-white px-6 py-3.5 font-bold text-violet-700 no-underline shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition">＋ Record a donation <span aria-hidden="true">→</span></a>
+          <a href="/dashboard" class="inline-flex items-center gap-3 rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 font-bold text-white no-underline hover:bg-white/20 transition">View dashboard</a>
+        </div>
+        <p class="mt-3 text-xs text-white/70">Records a contribution in the ledger; online payment processing is not set up.</p>
+      </div>
+      <div class="float absolute right-10 sm:right-20 top-1/2 -translate-y-1/2 hidden md:grid place-items-center w-48 h-48 lg:w-64 lg:h-64 rounded-full border border-white/25 bg-white/10 backdrop-blur-sm">
+        <div class="grid place-items-center w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-white/15 border border-white/30 text-7xl lg:text-8xl">♡</div>
+      </div>
+      <div class="absolute -right-24 -top-32 w-96 h-96 rounded-full border-[36px] border-white/10"></div>
+    </section>
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-7">
+      <article class="rounded-2xl border border-white bg-white/85 p-6 shadow-sm"><span class="grid place-items-center w-11 h-11 rounded-xl bg-violet-100 text-violet-700 text-xl">◇</span><h2 class="font-extrabold mt-5">Transparent by design</h2><p class="mt-2 text-sm leading-relaxed text-slate-500">Donation entries are recorded in a shared blockchain ledger for easy verification.</p></article>
+      <article class="rounded-2xl border border-white bg-white/85 p-6 shadow-sm"><span class="grid place-items-center w-11 h-11 rounded-xl bg-pink-100 text-pink-700 text-xl">♧</span><h2 class="font-extrabold mt-5">Donors in one place</h2><p class="mt-2 text-sm leading-relaxed text-slate-500">Browse contributions and donor details in a clear, searchable directory.</p></article>
+      <article class="rounded-2xl border border-white bg-white/85 p-6 shadow-sm"><span class="grid place-items-center w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 text-xl">↗</span><h2 class="font-extrabold mt-5">See your impact</h2><p class="mt-2 text-sm leading-relaxed text-slate-500">Review giving activity, supported causes, and contribution totals at a glance.</p></article>
+    </section>
+    <p class="text-center text-xs text-slate-400 mt-10">Givingly · Transparent giving, meaningful impact.</p>
   </main>
-
-  <script>
-    const toggleBtn = document.getElementById("modeToggle");
-    toggleBtn.addEventListener("click", () => {
-      document.documentElement.classList.toggle("dark");
-    });
-  </script>
-
 </body>
 </html>
